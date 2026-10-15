@@ -1,31 +1,34 @@
 """Utility script to push the repository to GitHub.
 
-Supports:
-1. Pushing via standard Git command (if git is configured).
-2. Pushing via Dulwich (Pure Python Git client).
+Configures SSL certificates and pushes via Dulwich (Pure Python Git client).
 """
 
 import os
 import sys
-import subprocess
+import certifi
+
+# Ensure SSL certificates are properly loaded on macOS
+os.environ["SSL_CERT_FILE"] = certifi.where()
+
 from dulwich import porcelain
 from dulwich.repo import Repo
 
 
-def push_with_python(remote_url: str, username: str = "", token: str = ""):
+def push_with_python(remote_url: str, username: str = "sushantv2301", token: str = ""):
     """Push local main branch to remote using pure Python Dulwich."""
     repo = Repo(".")
-    print(f"[*] Connecting to remote: {remote_url}")
+    print(f"[*] Target GitHub Repository: {remote_url}")
 
     # Set up remote in git config
     config = repo.get_config()
     config.set((b"remote", b"origin"), b"url", remote_url.encode("utf-8"))
     config.write_to_path()
 
-    # If username and token provided, inject into URL if https
+    # If token provided, format URL with credentials
     push_url = remote_url
-    if token and "https://" in remote_url:
-        clean_url = remote_url.replace("https://", "")
+    if token:
+        clean_url = remote_url.replace("https://", "").replace("http://", "")
+        # GitHub accepts https://<token>@github.com/... or https://<username>:<token>@github.com/...
         if username:
             push_url = f"https://{username}:{token}@{clean_url}"
         else:
@@ -38,46 +41,43 @@ def push_with_python(remote_url: str, username: str = "", token: str = ""):
             push_url.encode("utf-8"),
             refspecs=[b"refs/heads/main:refs/heads/main"],
         )
-        print("\n[✓] Successfully pushed to GitHub!")
-        print(f"    Repository: {remote_url}\n")
+        print("\n==============================================================")
+        print("  🎉 SUCCESS! Project successfully pushed to GitHub!")
+        print(f"  View online: https://github.com/sushantv2301/Movie-Recommendation-system")
+        print("==============================================================\n")
     except Exception as e:
-        print(f"\n[!] Push failed via Python: {e}")
-        print("[*] Trying master branch refspec...")
-        try:
-            porcelain.push(
-                repo,
-                push_url.encode("utf-8"),
-                refspecs=[b"refs/heads/master:refs/heads/master"],
-            )
-            print("\n[✓] Successfully pushed 'master' branch to GitHub!\n")
-        except Exception as e2:
-            print(f"[!] Push error: {e2}")
+        print(f"\n[!] Push failed: {e}")
+        if "HTTPUnauthorized" in str(type(e)) or "No valid credentials" in str(e):
+            print("\nGitHub requires authentication to push.")
+            print("Please provide a Personal Access Token (PAT) from GitHub:")
+            print("1. Go to https://github.com/settings/tokens")
+            print("2. Generate a token with 'repo' scope")
+            print("3. Re-run this script with your token.")
 
 
 def main():
+    repo_url = "https://github.com/sushantv2301/Movie-Recommendation-system.git"
+    token = ""
+
     if len(sys.argv) > 1:
-        remote_url = sys.argv[1].strip()
-    else:
+        arg = sys.argv[1].strip()
+        if arg.startswith("ghp_") or arg.startswith("github_pat_"):
+            token = arg
+        elif "github.com" in arg:
+            repo_url = arg
+            if len(sys.argv) > 2:
+                token = sys.argv[2].strip()
+
+    if not token:
+        token = os.environ.get("GITHUB_TOKEN", "").strip()
+
+    if not token:
         print("==============================================================")
-        print("  Push Movie Recommendation System to GitHub")
+        print("  Pushing to: https://github.com/sushantv2301/Movie-Recommendation-system.git")
         print("==============================================================")
-        remote_url = input("Enter your GitHub repository URL (e.g. https://github.com/username/repo.git): ").strip()
+        token = input("Enter your GitHub Personal Access Token (starts with ghp_ or github_pat_): ").strip()
 
-    if not remote_url:
-        print("[!] No repository URL provided.")
-        sys.exit(1)
-
-    # Optional credentials for private or non-interactive push
-    token = os.environ.get("GITHUB_TOKEN", "")
-    username = os.environ.get("GITHUB_USER", "")
-
-    if not token and "@" not in remote_url and remote_url.startswith("https://"):
-        print("\nNote: GitHub requires a Personal Access Token (PAT) for HTTPS.")
-        token = input("Enter your GitHub Personal Access Token (or press Enter if already in URL / SSH): ").strip()
-        if token:
-            username = input("Enter your GitHub Username: ").strip()
-
-    push_with_python(remote_url, username=username, token=token)
+    push_with_python(repo_url, username="sushantv2301", token=token)
 
 
 if __name__ == "__main__":
