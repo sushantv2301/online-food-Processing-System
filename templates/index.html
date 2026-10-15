@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineMind NLP | Movie Recommendation System</title>
+    <meta name="description" content="AI & NLP-Powered Movie Recommendation System using TF-IDF Vectorization, Cosine Similarity, and Python Flask.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-theme">
+    <!-- Background Ambient Lighting -->
+    <div class="ambient-glow glow-top-left"></div>
+    <div class="ambient-glow glow-top-right"></div>
+    <div class="ambient-glow glow-bottom-center"></div>
+
+    <!-- Main Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand-logo" onclick="switchTab('recommender')">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                        <line x1="7" y1="2" x2="7" y2="22"></line>
+                        <line x1="17" y1="2" x2="17" y2="22"></line>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <line x1="2" y1="7" x2="7" y2="7"></line>
+                        <line x1="2" y1="17" x2="7" y2="17"></line>
+                        <line x1="17" y1="17" x2="22" y2="17"></line>
+                        <line x1="17" y1="7" x2="22" y2="7"></line>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">CineMind <span class="gradient-text">NLP</span></span>
+                    <span class="brand-subtitle">AI Movie Recommender</span>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs" id="navTabs">
+                <button class="nav-tab active" data-tab="recommender">
+                    <span class="tab-icon">🎬</span> Recommend
+                </button>
+                <button class="nav-tab" data-tab="semantic-search">
+                    <span class="tab-icon">🧠</span> Natural Query
+                </button>
+                <button class="nav-tab" data-tab="catalog">
+                    <span class="tab-icon">🎞️</span> Explore ({{ stats.total_movies }})
+                </button>
+                <button class="nav-tab" data-tab="nlp-visualizer">
+                    <span class="tab-icon">🧪</span> NLP Inspector
+                </button>
+                <button class="nav-tab" data-tab="about">
+                    <span class="tab-icon">🎓</span> Project Info
+                </button>
+            </nav>
+
+            <!-- Status Pill -->
+            <div class="system-status-pill" title="Engine Status">
+                <span class="status-indicator"></span>
+                <span>TF-IDF • Cosine Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <!-- Hero Banner -->
+        <section class="hero-section">
+            <div class="academic-badge">
+                <span class="badge-dot"></span>
+                Dr. D. Y. Patil College of Engineering & Innovation &bull; Mini Project 2026-27
+            </div>
+            <h1 class="hero-title">
+                Intelligent Movie Recommendations Powered by <span class="gradient-text">Natural Language Processing</span>
+            </h1>
+            <p class="hero-description">
+                Experience content-based movie discovery using TF-IDF vectorization, Cosine Similarity matrices,
+                and linguistic metadata enrichment. Search by title or describe your exact cinematic mood in plain English.
+            </p>
+
+            <!-- Quick Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-value">{{ stats.total_movies }}</span>
+                    <span class="metric-label">Curated Movies</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">{{ stats.vocabulary_size }}</span>
+                    <span class="metric-label">NLP N-Gram Features</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">{{ stats.unique_genres }}</span>
+                    <span class="metric-label">Film Genres</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">{{ stats.average_rating }}</span>
+                    <span class="metric-label">Avg IMDb Rating</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: MOVIE-TO-MOVIE RECOMMENDER                              -->
+        <!-- ============================================================== -->
+        <section id="recommenderTab" class="tab-content active">
+            <div class="search-panel-card">
+                <div class="panel-header">
+                    <div class="header-icon">🎯</div>
+                    <div>
+                        <h2>Content-Based Movie Recommender</h2>
+                        <p class="subheading">Select any movie to calculate vector proximity and find the most relevant matches.</p>
+                    </div>
+                </div>
+
+                <div class="recommender-controls">
+                    <!-- Search Input with Autocomplete -->
+                    <div class="input-group">
+                        <label for="movieInput">Choose or type a movie title:</label>
+                        <div class="autocomplete-wrapper">
+                            <input 
+                                type="text" 
+                                id="movieInput" 
+                                placeholder="e.g. Interstellar, Inception, The Dark Knight..." 
+                                autocomplete="off"
+                                value="Interstellar"
+                            >
+                            <div id="autocompleteDropdown" class="autocomplete-dropdown hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Algorithm & Settings -->
+                    <div class="settings-row">
+                        <div class="setting-item">
+                            <label>Vector Space Model:</label>
+                            <div class="segmented-control" id="methodSelector">
+                                <button type="button" class="segment-btn active" data-method="tfidf">
+                                    TF-IDF (Weighted)
+                                </button>
+                                <button type="button" class="segment-btn" data-method="count">
+                                    Count (Bag of Words)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label for="topNSelect">Number of Recommendations:</label>
+                            <select id="topNSelect" class="custom-select">
+                                <option value="3">Top 3 Movies</option>
+                                <option value="6" selected>Top 6 Movies</option>
+                                <option value="9">Top 9 Movies</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="actions-row">
+                        <button id="btnRecommend" class="btn btn-primary">
+                            <span class="btn-icon">⚡</span> Calculate Recommendations
+                        </button>
+                        <button id="btnSurpriseMe" class="btn btn-secondary">
+                            <span class="btn-icon">🎲</span> Surprise Me (Random)
+                        </button>
+                    </div>
+
+                    <!-- Quick Picks Chips -->
+                    <div class="quick-picks-bar">
+                        <span class="quick-pick-label">Popular Picks:</span>
+                        <div class="chip-container" id="quickPicks">
+                            <button class="chip" data-title="Interstellar">Interstellar</button>
+                            <button class="chip" data-title="Inception">Inception</button>
+                            <button class="chip" data-title="The Dark Knight">The Dark Knight</button>
+                            <button class="chip" data-title="Toy Story">Toy Story</button>
+                            <button class="chip" data-title="Pulp Fiction">Pulp Fiction</button>
+                            <button class="chip" data-title="Parasite">Parasite</button>
+                            <button class="chip" data-title="Dune">Dune</button>
+                            <button class="chip" data-title="Spirited Away">Spirited Away</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Target Movie Card Container -->
+            <div id="targetMovieSection" class="target-movie-section"></div>
+
+            <!-- Recommendations Grid -->
+            <div class="results-header" id="recsHeader">
+                <h3 id="recsTitle">Recommended Movies</h3>
+                <span id="recsMethodBadge" class="badge badge-accent">TF-IDF &bull; Cosine Similarity</span>
+            </div>
+
+            <div id="recommendationsGrid" class="movies-grid">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: NATURAL LANGUAGE & MOOD SEARCH                          -->
+        <!-- ============================================================== -->
+        <section id="semanticSearchTab" class="tab-content">
+            <div class="search-panel-card">
+                <div class="panel-header">
+                    <div class="header-icon">🧠</div>
+                    <div>
+                        <h2>Natural Language Story & Mood Matcher</h2>
+                        <p class="subheading">Describe what you want to watch in your own words. Our NLP engine transforms your query into high-dimensional vector space to find matching movie plots.</p>
+                    </div>
+                </div>
+
+                <div class="nl-query-box">
+                    <label for="nlQueryInput">Describe your movie idea, mood, or storyline:</label>
+                    <textarea 
+                        id="nlQueryInput" 
+                        rows="3" 
+                        placeholder="e.g. Deep space exploration with astronauts traveling through a wormhole to save mankind from extinction..."
+                    ></textarea>
+
+                    <!-- Sample Queries -->
+                    <div class="sample-queries">
+                        <span class="sample-label">Try these sample prompts:</span>
+                        <div class="chip-container">
+                            <button class="chip sample-chip" data-query="Deep space travel with astronauts and wormholes in distant galaxies">
+                                🚀 Space & Wormholes
+                            </button>
+                            <button class="chip sample-chip" data-query="Dark mind bending psychological thriller with detectives and serial killers">
+                                🕵️ Psychological Thriller
+                            </button>
+                            <button class="chip sample-chip" data-query="Heartwarming animated adventure with toys or animals exploring friendship">
+                                🎈 Animated Journey
+                            </button>
+                            <button class="chip sample-chip" data-query="Cyberpunk future where human reality is a computer simulation">
+                                💻 Simulated Reality
+                            </button>
+                            <button class="chip sample-chip" data-query="Historical wartime biography drama about brilliant scientists">
+                                📜 Historical Drama
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="actions-row">
+                        <button id="btnNlSearch" class="btn btn-primary">
+                            <span class="btn-icon">🔍</span> Search Semantically
+                        </button>
+                        <button id="btnClearNl" class="btn btn-ghost">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NLP Query Match Results -->
+            <div class="results-header" id="nlResultsHeader" style="display: none;">
+                <h3 id="nlResultsTitle">Semantic Matches</h3>
+                <span id="nlQueryTokensBadge" class="badge badge-accent">NLP Vector Match</span>
+            </div>
+
+            <div id="nlResultsGrid" class="movies-grid"></div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: MOVIE CATALOG & EXPLORER                                -->
+        <!-- ============================================================== -->
+        <section id="catalogTab" class="tab-content">
+            <div class="catalog-filter-bar">
+                <div class="filter-group filter-search">
+                    <label for="catalogSearch">Search Title, Plot, or Director:</label>
+                    <input type="text" id="catalogSearch" placeholder="Type to filter...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="genreFilter">Genre:</label>
+                    <select id="genreFilter" class="custom-select">
+                        <option value="all">All Genres</option>
+                        {% for g in genres %}
+                        <option value="{{ g }}">{{ g }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="directorFilter">Director:</label>
+                    <select id="directorFilter" class="custom-select">
+                        <option value="all">All Directors</option>
+                        {% for d in directors %}
+                        <option value="{{ d }}">{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="minRatingRange">Min IMDb: <span id="ratingValue">0.0</span>★</label>
+                    <input type="range" id="minRatingRange" min="0" max="9.5" step="0.5" value="0">
+                </div>
+
+                <div class="filter-group">
+                    <label for="sortBySelect">Sort By:</label>
+                    <select id="sortBySelect" class="custom-select">
+                        <option value="rating">Highest Rated</option>
+                        <option value="year">Release Year (Newest)</option>
+                        <option value="title">Title (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="catalog-status">
+                <span id="catalogCount" class="catalog-count-badge">Showing {{ all_movies|length }} movies</span>
+            </div>
+
+            <div id="catalogGrid" class="movies-grid">
+                {% for movie in all_movies %}
+                <div class="movie-card" data-id="{{ movie.id }}">
+                    <div class="poster-container">
+                        <img 
+                            src="{{ movie.poster_url }}" 
+                            alt="{{ movie.title }} Poster" 
+                            loading="lazy" 
+                            onerror="handlePosterError(this, '{{ movie.title }}', '{{ movie.genre }}')"
+                        >
+                        <div class="rating-badge">
+                            <span class="star-icon">★</span> {{ movie.rating }}
+                        </div>
+                        <div class="year-badge">{{ movie.year }}</div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="genre-tag">{{ movie.genre }}</div>
+                        <h4 class="movie-title">{{ movie.title }}</h4>
+                        <p class="movie-director">Dir: <strong>{{ movie.director }}</strong></p>
+                        <p class="movie-plot">{{ movie.description[:110] }}...</p>
+                        <div class="card-actions">
+                            <button class="btn btn-sm btn-outline" onclick="openMovieDetails({{ movie.id }})">Details</button>
+                            <button class="btn btn-sm btn-primary" onclick="recommendFromCatalog('{{ movie.title }}')">Find Similar</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: INTERACTIVE NLP PIPELINE VISUALIZER                     -->
+        <!-- ============================================================== -->
+        <section id="nlpVisualizerTab" class="tab-content">
+            <div class="visualizer-intro-card">
+                <div class="panel-header">
+                    <div class="header-icon">🧪</div>
+                    <div>
+                        <h2>Interactive Natural Language Processing Pipeline</h2>
+                        <p class="subheading">Step into the AI engine. Inspect how raw textual movie descriptions are normalized, tokenized, filtered through stopword lexicons, stemmed, and converted into mathematical vector representations.</p>
+                    </div>
+                </div>
+
+                <div class="visualizer-input-box">
+                    <label for="visualizerInput">Test any text or movie title:</label>
+                    <div class="input-button-row">
+                        <input 
+                            type="text" 
+                            id="visualizerInput" 
+                            placeholder="Type text or a movie name (e.g. Interstellar, Space voyage with wormhole)..." 
+                            value="Interstellar"
+                        >
+                        <button id="btnInspectNlp" class="btn btn-primary">Inspect Pipeline</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step by Step Pipeline Graphic -->
+            <div class="pipeline-container" id="pipelineContainer">
+                <!-- Stage 1 -->
+                <div class="pipeline-card">
+                    <div class="step-indicator">Step 01</div>
+                    <h3 class="step-title">Raw Text Ingestion & Metadata Soup</h3>
+                    <p class="step-desc">Combines Title, Genre, Director, and Plot into a single enriched document soup.</p>
+                    <div class="code-box" id="step1Output">Loading...</div>
+                </div>
+
+                <!-- Stage 2 -->
+                <div class="pipeline-card">
+                    <div class="step-indicator">Step 02</div>
+                    <h3 class="step-title">Text Cleaning & Lowercasing</h3>
+                    <p class="step-desc">Removes URLs, non-alphanumeric noise, and converts all characters to lowercase.</p>
+                    <div class="code-box" id="step2Output">Loading...</div>
+                </div>
+
+                <!-- Stage 3 -->
+                <div class="pipeline-card">
+                    <div class="step-indicator">Step 03</div>
+                    <h3 class="step-title">Tokenization & Stopword Removal</h3>
+                    <p class="step-desc">Splits text into atomic word tokens and removes uninformative high-frequency words (e.g. "the", "in", "an").</p>
+                    <div class="tokens-split-container">
+                        <div>
+                            <span class="sub-label">Filtered Informative Tokens (<span id="keptTokensCount">0</span>):</span>
+                            <div class="tokens-wrap" id="keptTokens"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="sub-label">Removed Stopwords (<span id="removedTokensCount">0</span>):</span>
+                            <div class="tokens-wrap stopwords" id="removedTokens"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 4 -->
+                <div class="pipeline-card">
+                    <div class="step-indicator">Step 04</div>
+                    <h3 class="step-title">Morphological Suffix Stemming</h3>
+                    <p class="step-desc">Reduces inflectional variants to base word stems (e.g. "explorers" &rarr; "explor", "mysteries" &rarr; "mysteri").</p>
+                    <div class="stem-table-wrapper" id="stemTransformations"></div>
+                </div>
+
+                <!-- Stage 5 -->
+                <div class="pipeline-card">
+                    <div class="step-indicator">Step 05</div>
+                    <h3 class="step-title">TF-IDF Vector Space Weights</h3>
+                    <p class="step-desc">Evaluates Term Frequency vs. Inverse Document Frequency to assign higher mathematical weights to distinct terms.</p>
+                    <div class="tfidf-bars-container" id="tfidfBars"></div>
+                </div>
+
+                <!-- Stage 6 -->
+                <div class="pipeline-card">
+                    <div class="step-indicator">Step 06</div>
+                    <h3 class="step-title">Cosine Similarity in N-Dimensional Space</h3>
+                    <p class="step-desc">Computes the normalized dot product (cosine of the angle &theta;) between document vectors.</p>
+                    <div class="math-formula-box">
+                        <div class="formula-display">
+                            $$\text{Cosine Similarity}(\vec{A}, \vec{B}) = \cos(\theta) = \frac{\vec{A} \cdot \vec{B}}{\|\vec{A}\| \|\vec{B}\|} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}}$$
+                        </div>
+                        <div class="formula-legend">
+                            <p>&bull; <strong>Range:</strong> 0.0 (Completely Orthogonal / No Shared Words) to 1.0 (Identical Direction)</p>
+                            <p>&bull; <strong>Advantage:</strong> Angle-based metric remains unaffected by plot text length differences.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 5: ABOUT & ACADEMIC CREDITS                                -->
+        <!-- ============================================================== -->
+        <section id="aboutTab" class="tab-content">
+            <div class="academic-project-card">
+                <div class="institution-header">
+                    <div class="inst-icon">🏛️</div>
+                    <div>
+                        <h2>Dr. D. Y. Patil College of Engineering and Innovation</h2>
+                        <p class="inst-dept">Department of Engineering Science and Humanities &bull; Academic Year 2026-27</p>
+                    </div>
+                </div>
+
+                <div class="project-headline">
+                    <h3>Engineering Mini Project: Movie Recommendation System using NLP and Python</h3>
+                </div>
+
+                <!-- Team Members Grid -->
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="avatar-ring">SP</div>
+                        <h4>Ingole Sushant Prakashrao</h4>
+                        <p class="role-title">Lead Student Developer</p>
+                        <span class="dept-badge">Engineering Mini Project</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar-ring">DB</div>
+                        <h4>Bhalke Diksha Sangmeshwar</h4>
+                        <p class="role-title">Student Co-Developer</p>
+                        <span class="dept-badge">Engineering Mini Project</span>
+                    </div>
+                </div>
+
+                <!-- Project Architecture & Methodology -->
+                <div class="project-details-section">
+                    <h3>Project Architecture & System Design</h3>
+                    <div class="arch-flow">
+                        <div class="arch-node">
+                            <span class="node-icon">📄</span>
+                            <strong>Dataset Ingestion</strong>
+                            <span>52 Multi-genre movies</span>
+                        </div>
+                        <div class="arch-arrow">&rarr;</div>
+                        <div class="arch-node">
+                            <span class="node-icon">🥣</span>
+                            <strong>Metadata Soup</strong>
+                            <span>Title, Genre, Director, Plot</span>
+                        </div>
+                        <div class="arch-arrow">&rarr;</div>
+                        <div class="arch-node">
+                            <span class="node-icon">🔤</span>
+                            <strong>NLP Preprocessing</strong>
+                            <span>Cleaning, Stopwords, Stemming</span>
+                        </div>
+                        <div class="arch-arrow">&rarr;</div>
+                        <div class="arch-node">
+                            <span class="node-icon">📊</span>
+                            <strong>TF-IDF Vectorizer</strong>
+                            <span>1,400+ N-gram features</span>
+                        </div>
+                        <div class="arch-arrow">&rarr;</div>
+                        <div class="arch-node">
+                            <span class="node-icon">📐</span>
+                            <strong>Cosine Similarity</strong>
+                            <span>Normalized Dot Product</span>
+                        </div>
+                        <div class="arch-arrow">&rarr;</div>
+                        <div class="arch-node">
+                            <span class="node-icon">🎯</span>
+                            <strong>Ranked Output</strong>
+                            <span>Instant Top-N matches</span>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack Badges -->
+                    <div class="tech-stack-row">
+                        <span class="tech-pill">Python 3.14</span>
+                        <span class="tech-pill">Flask 3.1</span>
+                        <span class="tech-pill">scikit-learn (TF-IDF & Cosine Similarity)</span>
+                        <span class="tech-pill">pandas & numpy</span>
+                        <span class="tech-pill">HTML5 & CSS3 Glassmorphism</span>
+                        <span class="tech-pill">Vanilla JavaScript (ES6+)</span>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <h3 class="mt-4">Comparison: TF-IDF vs. CountVectorizer (Bag of Words)</h3>
+                    <div class="table-responsive">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>TF-IDF Vectorizer</th>
+                                    <th>CountVectorizer (Bag of Words)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Mathematical Approach</strong></td>
+                                    <td>Weights terms by frequency in document multiplied by log of inverse document frequency</td>
+                                    <td>Simple count of term occurrences in the document</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Handling Common Words</strong></td>
+                                    <td>Penalizes common generic words (e.g. "film", "story") across documents</td>
+                                    <td>Gives higher magnitude to frequent words regardless of informativeness</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Semantic Discrimination</strong></td>
+                                    <td>High (distinguishes rare keywords like "wormhole", "magician")</td>
+                                    <td>Moderate (can be skewed by word repetitions)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Recommended Use Case</strong></td>
+                                    <td>Story & plot similarity, fine-grained semantic recommendation</td>
+                                    <td>Quick keyword matching, uniform feature distributions</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Movie Details Interactive Modal -->
+    <dialog id="movieModal" class="movie-modal">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-container">
+            <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+            <div id="modalContent" class="modal-body">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Toast Notification Element -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2026-27 <strong>CineMind NLP</strong> &bull; Mini Project by <strong>Sushant Ingole</strong> & <strong>Diksha Bhalke</strong></p>
+            <p class="footer-college">Dr. D. Y. Patil College of Engineering and Innovation, Department of Engineering Science & Humanities</p>
+        </div>
+    </footer>
+
+    <!-- Client-side Scripts -->
+    <script>
+        // Pass server-rendered initial movies to client JS
+        window.INITIAL_MOVIES = {{ all_movies|tojson|safe }};
+        window.INITIAL_STATS = {{ stats|tojson|safe }};
+    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
