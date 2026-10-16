@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# CineMind NLP - Launch Script
-# Engineering Mini Project: Movie Recommendation System using NLP and Python
+# FoodQueue Pro - Launch Script
+# Engineering Mini Project: Online Food Order Processing System using Queue Data Structure
 # Students: Sushant Ingole & Diksha Bhalke
 # College: Dr. D. Y. Patil College of Engineering and Innovation (A.Y. 2026-27)
 # ==============================================================================
@@ -10,7 +10,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 
 echo "=================================================================="
-echo "  🎬 CineMind NLP: Movie Recommendation System Web Application"
+echo "  🍔 FoodQueue Pro: Online Food Order Processing System"
+echo "  Topic: First-In-First-Out (FIFO) Queue Data Structure Mini Project"
 echo "  Dr. D. Y. Patil College of Engineering and Innovation"
 echo "  Students: Sushant Ingole & Diksha Bhalke"
 echo "=================================================================="
@@ -24,12 +25,15 @@ else
     PYTHON_CMD="python3"
 fi
 
-# Ensure port 5001 or specified PORT
-PORT="${PORT:-5001}"
-export PORT
-
-echo "[*] Starting Flask Web Server on http://127.0.0.1:${PORT} ..."
-echo "[*] Press Ctrl+C to stop the server at any time."
+# Launch Flask Application
+echo "[*] Launching Web Application..."
+echo "[*] Features Active:"
+echo "    - Customer Menu & Real-Time Order Placement (Enqueue O(1))"
+echo "    - Live Order Status Tracking & Queue Position Countdown"
+echo "    - McDonald's Style Split-Screen Pickup Counter Display"
+echo "    - Kitchen Display System (KDS) with Strict FIFO Dequeue (O(1))"
+echo "    - Dynamic Queue DSA Memory Visualizer & Viva Reference Guide"
 echo "=================================================================="
+echo "[*] Press Ctrl+C to terminate the server."
 
 "$PYTHON_CMD" app.py

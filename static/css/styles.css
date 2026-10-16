@@ -1,0 +1,136 @@
+/* Custom Styles and Animations for Food Order Processing System */
+
+:root {
+  --primary-food: #f97316; /* Warm Amber / Orange */
+  --primary-dark: #c2410c;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+}
+
+/* Glassmorphism effects */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+}
+
+.dark-glass-panel {
+  background: rgba(17, 24, 39, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(55, 65, 81, 0.6);
+}
+
+/* Queue Pointer Animation & Glow */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.8);
+    transform: translateY(-2px);
+  }
+}
+
+.queue-front-card {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+  border-left: 6px solid #f97316 !important;
+}
+
+@keyframes readyPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 24px rgba(16, 185, 129, 0.9);
+  }
+}
+
+.ready-pulse {
+  animation: readyPulse 2s infinite ease-in-out;
+}
+
+/* Queue Visualizer Memory Node */
+.queue-memory-node {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.queue-memory-node:hover {
+  transform: translateY(-4px) scale(1.03);
+}
+
+/* Arrow between nodes */
+.node-connector::after {
+  content: "➔";
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #9ca3af;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+/* Food Card Hover Effect */
+.food-card {
+  transition: all 0.25s ease-out;
+}
+
+.food-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15);
+}
+
+/* Stepper line */
+.step-line-active {
+  background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+}
+
+/* Notification badge ping */
+@keyframes pingSlow {
+  75%, 100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.badge-ping {
+  animation: pingSlow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Code block highlight */
+pre.pseudocode {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}

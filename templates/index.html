@@ -1,589 +1,879 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineMind NLP | Movie Recommendation System</title>
-    <meta name="description" content="AI & NLP-Powered Movie Recommendation System using TF-IDF Vectorization, Cosine Similarity, and Python Flask.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodQueue Pro | Online Food Order Processing System (FIFO Queue)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
-<body class="dark-theme">
-    <!-- Background Ambient Lighting -->
-    <div class="ambient-glow glow-top-left"></div>
-    <div class="ambient-glow glow-top-right"></div>
-    <div class="ambient-glow glow-bottom-center"></div>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col font-sans antialiased">
 
-    <!-- Main Navigation Bar -->
-    <header class="navbar">
-        <div class="nav-container">
-            <div class="brand-logo" onclick="switchTab('recommender')">
-                <div class="brand-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                        <line x1="7" y1="2" x2="7" y2="22"></line>
-                        <line x1="17" y1="2" x2="17" y2="22"></line>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <line x1="2" y1="7" x2="7" y2="7"></line>
-                        <line x1="2" y1="17" x2="7" y2="17"></line>
-                        <line x1="17" y1="17" x2="22" y2="17"></line>
-                        <line x1="17" y1="7" x2="22" y2="7"></line>
-                    </svg>
-                </div>
-                <div class="brand-text">
-                    <span class="brand-title">CineMind <span class="gradient-text">NLP</span></span>
-                    <span class="brand-subtitle">AI Movie Recommender</span>
-                </div>
-            </div>
+  <!-- Academic Mini Project Header Ribbon -->
+  <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white text-xs py-1.5 px-4 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold uppercase tracking-wider bg-black/20 px-2 py-0.5 rounded text-[10px]">Mini Project</span>
+        <span>Online Food Order Processing System using Queue Data Structure (FIFO)</span>
+      </div>
+      <div class="flex items-center space-x-3 text-[11px] opacity-95">
+        <span><i class="fas fa-university mr-1"></i> Dr. D. Y. Patil College of Engg. & Innovation</span>
+        <span class="hidden md:inline">• AY 2026-27</span>
+      </div>
+    </div>
+  </div>
 
-            <!-- Navigation Tabs -->
-            <nav class="nav-tabs" id="navTabs">
-                <button class="nav-tab active" data-tab="recommender">
-                    <span class="tab-icon">🎬</span> Recommend
-                </button>
-                <button class="nav-tab" data-tab="semantic-search">
-                    <span class="tab-icon">🧠</span> Natural Query
-                </button>
-                <button class="nav-tab" data-tab="catalog">
-                    <span class="tab-icon">🎞️</span> Explore ({{ stats.total_movies }})
-                </button>
-                <button class="nav-tab" data-tab="nlp-visualizer">
-                    <span class="tab-icon">🧪</span> NLP Inspector
-                </button>
-                <button class="nav-tab" data-tab="about">
-                    <span class="tab-icon">🎓</span> Project Info
-                </button>
-            </nav>
-
-            <!-- Status Pill -->
-            <div class="system-status-pill" title="Engine Status">
-                <span class="status-indicator"></span>
-                <span>TF-IDF • Cosine Active</span>
-            </div>
+  <!-- Primary Top Navbar -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo & System Branding -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('menu')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md text-xl">
+          <i class="fas fa-burger"></i>
         </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="main-content">
-        <!-- Hero Banner -->
-        <section class="hero-section">
-            <div class="academic-badge">
-                <span class="badge-dot"></span>
-                Dr. D. Y. Patil College of Engineering & Innovation &bull; Mini Project 2026-27
-            </div>
-            <h1 class="hero-title">
-                Intelligent Movie Recommendations Powered by <span class="gradient-text">Natural Language Processing</span>
-            </h1>
-            <p class="hero-description">
-                Experience content-based movie discovery using TF-IDF vectorization, Cosine Similarity matrices,
-                and linguistic metadata enrichment. Search by title or describe your exact cinematic mood in plain English.
-            </p>
-
-            <!-- Quick Metrics Grid -->
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <span class="metric-value">{{ stats.total_movies }}</span>
-                    <span class="metric-label">Curated Movies</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-value">{{ stats.vocabulary_size }}</span>
-                    <span class="metric-label">NLP N-Gram Features</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-value">{{ stats.unique_genres }}</span>
-                    <span class="metric-label">Film Genres</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-value">{{ stats.average_rating }}</span>
-                    <span class="metric-label">Avg IMDb Rating</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ============================================================== -->
-        <!-- TAB 1: MOVIE-TO-MOVIE RECOMMENDER                              -->
-        <!-- ============================================================== -->
-        <section id="recommenderTab" class="tab-content active">
-            <div class="search-panel-card">
-                <div class="panel-header">
-                    <div class="header-icon">🎯</div>
-                    <div>
-                        <h2>Content-Based Movie Recommender</h2>
-                        <p class="subheading">Select any movie to calculate vector proximity and find the most relevant matches.</p>
-                    </div>
-                </div>
-
-                <div class="recommender-controls">
-                    <!-- Search Input with Autocomplete -->
-                    <div class="input-group">
-                        <label for="movieInput">Choose or type a movie title:</label>
-                        <div class="autocomplete-wrapper">
-                            <input 
-                                type="text" 
-                                id="movieInput" 
-                                placeholder="e.g. Interstellar, Inception, The Dark Knight..." 
-                                autocomplete="off"
-                                value="Interstellar"
-                            >
-                            <div id="autocompleteDropdown" class="autocomplete-dropdown hidden"></div>
-                        </div>
-                    </div>
-
-                    <!-- Algorithm & Settings -->
-                    <div class="settings-row">
-                        <div class="setting-item">
-                            <label>Vector Space Model:</label>
-                            <div class="segmented-control" id="methodSelector">
-                                <button type="button" class="segment-btn active" data-method="tfidf">
-                                    TF-IDF (Weighted)
-                                </button>
-                                <button type="button" class="segment-btn" data-method="count">
-                                    Count (Bag of Words)
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="setting-item">
-                            <label for="topNSelect">Number of Recommendations:</label>
-                            <select id="topNSelect" class="custom-select">
-                                <option value="3">Top 3 Movies</option>
-                                <option value="6" selected>Top 6 Movies</option>
-                                <option value="9">Top 9 Movies</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="actions-row">
-                        <button id="btnRecommend" class="btn btn-primary">
-                            <span class="btn-icon">⚡</span> Calculate Recommendations
-                        </button>
-                        <button id="btnSurpriseMe" class="btn btn-secondary">
-                            <span class="btn-icon">🎲</span> Surprise Me (Random)
-                        </button>
-                    </div>
-
-                    <!-- Quick Picks Chips -->
-                    <div class="quick-picks-bar">
-                        <span class="quick-pick-label">Popular Picks:</span>
-                        <div class="chip-container" id="quickPicks">
-                            <button class="chip" data-title="Interstellar">Interstellar</button>
-                            <button class="chip" data-title="Inception">Inception</button>
-                            <button class="chip" data-title="The Dark Knight">The Dark Knight</button>
-                            <button class="chip" data-title="Toy Story">Toy Story</button>
-                            <button class="chip" data-title="Pulp Fiction">Pulp Fiction</button>
-                            <button class="chip" data-title="Parasite">Parasite</button>
-                            <button class="chip" data-title="Dune">Dune</button>
-                            <button class="chip" data-title="Spirited Away">Spirited Away</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Target Movie Card Container -->
-            <div id="targetMovieSection" class="target-movie-section"></div>
-
-            <!-- Recommendations Grid -->
-            <div class="results-header" id="recsHeader">
-                <h3 id="recsTitle">Recommended Movies</h3>
-                <span id="recsMethodBadge" class="badge badge-accent">TF-IDF &bull; Cosine Similarity</span>
-            </div>
-
-            <div id="recommendationsGrid" class="movies-grid">
-                <!-- Dynamically populated via JS -->
-            </div>
-        </section>
-
-        <!-- ============================================================== -->
-        <!-- TAB 2: NATURAL LANGUAGE & MOOD SEARCH                          -->
-        <!-- ============================================================== -->
-        <section id="semanticSearchTab" class="tab-content">
-            <div class="search-panel-card">
-                <div class="panel-header">
-                    <div class="header-icon">🧠</div>
-                    <div>
-                        <h2>Natural Language Story & Mood Matcher</h2>
-                        <p class="subheading">Describe what you want to watch in your own words. Our NLP engine transforms your query into high-dimensional vector space to find matching movie plots.</p>
-                    </div>
-                </div>
-
-                <div class="nl-query-box">
-                    <label for="nlQueryInput">Describe your movie idea, mood, or storyline:</label>
-                    <textarea 
-                        id="nlQueryInput" 
-                        rows="3" 
-                        placeholder="e.g. Deep space exploration with astronauts traveling through a wormhole to save mankind from extinction..."
-                    ></textarea>
-
-                    <!-- Sample Queries -->
-                    <div class="sample-queries">
-                        <span class="sample-label">Try these sample prompts:</span>
-                        <div class="chip-container">
-                            <button class="chip sample-chip" data-query="Deep space travel with astronauts and wormholes in distant galaxies">
-                                🚀 Space & Wormholes
-                            </button>
-                            <button class="chip sample-chip" data-query="Dark mind bending psychological thriller with detectives and serial killers">
-                                🕵️ Psychological Thriller
-                            </button>
-                            <button class="chip sample-chip" data-query="Heartwarming animated adventure with toys or animals exploring friendship">
-                                🎈 Animated Journey
-                            </button>
-                            <button class="chip sample-chip" data-query="Cyberpunk future where human reality is a computer simulation">
-                                💻 Simulated Reality
-                            </button>
-                            <button class="chip sample-chip" data-query="Historical wartime biography drama about brilliant scientists">
-                                📜 Historical Drama
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="actions-row">
-                        <button id="btnNlSearch" class="btn btn-primary">
-                            <span class="btn-icon">🔍</span> Search Semantically
-                        </button>
-                        <button id="btnClearNl" class="btn btn-ghost">Clear</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NLP Query Match Results -->
-            <div class="results-header" id="nlResultsHeader" style="display: none;">
-                <h3 id="nlResultsTitle">Semantic Matches</h3>
-                <span id="nlQueryTokensBadge" class="badge badge-accent">NLP Vector Match</span>
-            </div>
-
-            <div id="nlResultsGrid" class="movies-grid"></div>
-        </section>
-
-        <!-- ============================================================== -->
-        <!-- TAB 3: MOVIE CATALOG & EXPLORER                                -->
-        <!-- ============================================================== -->
-        <section id="catalogTab" class="tab-content">
-            <div class="catalog-filter-bar">
-                <div class="filter-group filter-search">
-                    <label for="catalogSearch">Search Title, Plot, or Director:</label>
-                    <input type="text" id="catalogSearch" placeholder="Type to filter...">
-                </div>
-
-                <div class="filter-group">
-                    <label for="genreFilter">Genre:</label>
-                    <select id="genreFilter" class="custom-select">
-                        <option value="all">All Genres</option>
-                        {% for g in genres %}
-                        <option value="{{ g }}">{{ g }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="directorFilter">Director:</label>
-                    <select id="directorFilter" class="custom-select">
-                        <option value="all">All Directors</option>
-                        {% for d in directors %}
-                        <option value="{{ d }}">{{ d }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="minRatingRange">Min IMDb: <span id="ratingValue">0.0</span>★</label>
-                    <input type="range" id="minRatingRange" min="0" max="9.5" step="0.5" value="0">
-                </div>
-
-                <div class="filter-group">
-                    <label for="sortBySelect">Sort By:</label>
-                    <select id="sortBySelect" class="custom-select">
-                        <option value="rating">Highest Rated</option>
-                        <option value="year">Release Year (Newest)</option>
-                        <option value="title">Title (A-Z)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="catalog-status">
-                <span id="catalogCount" class="catalog-count-badge">Showing {{ all_movies|length }} movies</span>
-            </div>
-
-            <div id="catalogGrid" class="movies-grid">
-                {% for movie in all_movies %}
-                <div class="movie-card" data-id="{{ movie.id }}">
-                    <div class="poster-container">
-                        <img 
-                            src="{{ movie.poster_url }}" 
-                            alt="{{ movie.title }} Poster" 
-                            loading="lazy" 
-                            onerror="handlePosterError(this, '{{ movie.title }}', '{{ movie.genre }}')"
-                        >
-                        <div class="rating-badge">
-                            <span class="star-icon">★</span> {{ movie.rating }}
-                        </div>
-                        <div class="year-badge">{{ movie.year }}</div>
-                    </div>
-                    <div class="movie-info">
-                        <div class="genre-tag">{{ movie.genre }}</div>
-                        <h4 class="movie-title">{{ movie.title }}</h4>
-                        <p class="movie-director">Dir: <strong>{{ movie.director }}</strong></p>
-                        <p class="movie-plot">{{ movie.description[:110] }}...</p>
-                        <div class="card-actions">
-                            <button class="btn btn-sm btn-outline" onclick="openMovieDetails({{ movie.id }})">Details</button>
-                            <button class="btn btn-sm btn-primary" onclick="recommendFromCatalog('{{ movie.title }}')">Find Similar</button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <!-- ============================================================== -->
-        <!-- TAB 4: INTERACTIVE NLP PIPELINE VISUALIZER                     -->
-        <!-- ============================================================== -->
-        <section id="nlpVisualizerTab" class="tab-content">
-            <div class="visualizer-intro-card">
-                <div class="panel-header">
-                    <div class="header-icon">🧪</div>
-                    <div>
-                        <h2>Interactive Natural Language Processing Pipeline</h2>
-                        <p class="subheading">Step into the AI engine. Inspect how raw textual movie descriptions are normalized, tokenized, filtered through stopword lexicons, stemmed, and converted into mathematical vector representations.</p>
-                    </div>
-                </div>
-
-                <div class="visualizer-input-box">
-                    <label for="visualizerInput">Test any text or movie title:</label>
-                    <div class="input-button-row">
-                        <input 
-                            type="text" 
-                            id="visualizerInput" 
-                            placeholder="Type text or a movie name (e.g. Interstellar, Space voyage with wormhole)..." 
-                            value="Interstellar"
-                        >
-                        <button id="btnInspectNlp" class="btn btn-primary">Inspect Pipeline</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step by Step Pipeline Graphic -->
-            <div class="pipeline-container" id="pipelineContainer">
-                <!-- Stage 1 -->
-                <div class="pipeline-card">
-                    <div class="step-indicator">Step 01</div>
-                    <h3 class="step-title">Raw Text Ingestion & Metadata Soup</h3>
-                    <p class="step-desc">Combines Title, Genre, Director, and Plot into a single enriched document soup.</p>
-                    <div class="code-box" id="step1Output">Loading...</div>
-                </div>
-
-                <!-- Stage 2 -->
-                <div class="pipeline-card">
-                    <div class="step-indicator">Step 02</div>
-                    <h3 class="step-title">Text Cleaning & Lowercasing</h3>
-                    <p class="step-desc">Removes URLs, non-alphanumeric noise, and converts all characters to lowercase.</p>
-                    <div class="code-box" id="step2Output">Loading...</div>
-                </div>
-
-                <!-- Stage 3 -->
-                <div class="pipeline-card">
-                    <div class="step-indicator">Step 03</div>
-                    <h3 class="step-title">Tokenization & Stopword Removal</h3>
-                    <p class="step-desc">Splits text into atomic word tokens and removes uninformative high-frequency words (e.g. "the", "in", "an").</p>
-                    <div class="tokens-split-container">
-                        <div>
-                            <span class="sub-label">Filtered Informative Tokens (<span id="keptTokensCount">0</span>):</span>
-                            <div class="tokens-wrap" id="keptTokens"></div>
-                        </div>
-                        <div class="mt-2">
-                            <span class="sub-label">Removed Stopwords (<span id="removedTokensCount">0</span>):</span>
-                            <div class="tokens-wrap stopwords" id="removedTokens"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stage 4 -->
-                <div class="pipeline-card">
-                    <div class="step-indicator">Step 04</div>
-                    <h3 class="step-title">Morphological Suffix Stemming</h3>
-                    <p class="step-desc">Reduces inflectional variants to base word stems (e.g. "explorers" &rarr; "explor", "mysteries" &rarr; "mysteri").</p>
-                    <div class="stem-table-wrapper" id="stemTransformations"></div>
-                </div>
-
-                <!-- Stage 5 -->
-                <div class="pipeline-card">
-                    <div class="step-indicator">Step 05</div>
-                    <h3 class="step-title">TF-IDF Vector Space Weights</h3>
-                    <p class="step-desc">Evaluates Term Frequency vs. Inverse Document Frequency to assign higher mathematical weights to distinct terms.</p>
-                    <div class="tfidf-bars-container" id="tfidfBars"></div>
-                </div>
-
-                <!-- Stage 6 -->
-                <div class="pipeline-card">
-                    <div class="step-indicator">Step 06</div>
-                    <h3 class="step-title">Cosine Similarity in N-Dimensional Space</h3>
-                    <p class="step-desc">Computes the normalized dot product (cosine of the angle &theta;) between document vectors.</p>
-                    <div class="math-formula-box">
-                        <div class="formula-display">
-                            $$\text{Cosine Similarity}(\vec{A}, \vec{B}) = \cos(\theta) = \frac{\vec{A} \cdot \vec{B}}{\|\vec{A}\| \|\vec{B}\|} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}}$$
-                        </div>
-                        <div class="formula-legend">
-                            <p>&bull; <strong>Range:</strong> 0.0 (Completely Orthogonal / No Shared Words) to 1.0 (Identical Direction)</p>
-                            <p>&bull; <strong>Advantage:</strong> Angle-based metric remains unaffected by plot text length differences.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ============================================================== -->
-        <!-- TAB 5: ABOUT & ACADEMIC CREDITS                                -->
-        <!-- ============================================================== -->
-        <section id="aboutTab" class="tab-content">
-            <div class="academic-project-card">
-                <div class="institution-header">
-                    <div class="inst-icon">🏛️</div>
-                    <div>
-                        <h2>Dr. D. Y. Patil College of Engineering and Innovation</h2>
-                        <p class="inst-dept">Department of Engineering Science and Humanities &bull; Academic Year 2026-27</p>
-                    </div>
-                </div>
-
-                <div class="project-headline">
-                    <h3>Engineering Mini Project: Movie Recommendation System using NLP and Python</h3>
-                </div>
-
-                <!-- Team Members Grid -->
-                <div class="team-grid">
-                    <div class="team-card">
-                        <div class="avatar-ring">SP</div>
-                        <h4>Ingole Sushant Prakashrao</h4>
-                        <p class="role-title">Lead Student Developer</p>
-                        <span class="dept-badge">Engineering Mini Project</span>
-                    </div>
-                    <div class="team-card">
-                        <div class="avatar-ring">DB</div>
-                        <h4>Bhalke Diksha Sangmeshwar</h4>
-                        <p class="role-title">Student Co-Developer</p>
-                        <span class="dept-badge">Engineering Mini Project</span>
-                    </div>
-                </div>
-
-                <!-- Project Architecture & Methodology -->
-                <div class="project-details-section">
-                    <h3>Project Architecture & System Design</h3>
-                    <div class="arch-flow">
-                        <div class="arch-node">
-                            <span class="node-icon">📄</span>
-                            <strong>Dataset Ingestion</strong>
-                            <span>52 Multi-genre movies</span>
-                        </div>
-                        <div class="arch-arrow">&rarr;</div>
-                        <div class="arch-node">
-                            <span class="node-icon">🥣</span>
-                            <strong>Metadata Soup</strong>
-                            <span>Title, Genre, Director, Plot</span>
-                        </div>
-                        <div class="arch-arrow">&rarr;</div>
-                        <div class="arch-node">
-                            <span class="node-icon">🔤</span>
-                            <strong>NLP Preprocessing</strong>
-                            <span>Cleaning, Stopwords, Stemming</span>
-                        </div>
-                        <div class="arch-arrow">&rarr;</div>
-                        <div class="arch-node">
-                            <span class="node-icon">📊</span>
-                            <strong>TF-IDF Vectorizer</strong>
-                            <span>1,400+ N-gram features</span>
-                        </div>
-                        <div class="arch-arrow">&rarr;</div>
-                        <div class="arch-node">
-                            <span class="node-icon">📐</span>
-                            <strong>Cosine Similarity</strong>
-                            <span>Normalized Dot Product</span>
-                        </div>
-                        <div class="arch-arrow">&rarr;</div>
-                        <div class="arch-node">
-                            <span class="node-icon">🎯</span>
-                            <strong>Ranked Output</strong>
-                            <span>Instant Top-N matches</span>
-                        </div>
-                    </div>
-
-                    <!-- Tech Stack Badges -->
-                    <div class="tech-stack-row">
-                        <span class="tech-pill">Python 3.14</span>
-                        <span class="tech-pill">Flask 3.1</span>
-                        <span class="tech-pill">scikit-learn (TF-IDF & Cosine Similarity)</span>
-                        <span class="tech-pill">pandas & numpy</span>
-                        <span class="tech-pill">HTML5 & CSS3 Glassmorphism</span>
-                        <span class="tech-pill">Vanilla JavaScript (ES6+)</span>
-                    </div>
-
-                    <!-- Comparison Table -->
-                    <h3 class="mt-4">Comparison: TF-IDF vs. CountVectorizer (Bag of Words)</h3>
-                    <div class="table-responsive">
-                        <table class="comparison-table">
-                            <thead>
-                                <tr>
-                                    <th>Feature</th>
-                                    <th>TF-IDF Vectorizer</th>
-                                    <th>CountVectorizer (Bag of Words)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Mathematical Approach</strong></td>
-                                    <td>Weights terms by frequency in document multiplied by log of inverse document frequency</td>
-                                    <td>Simple count of term occurrences in the document</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Handling Common Words</strong></td>
-                                    <td>Penalizes common generic words (e.g. "film", "story") across documents</td>
-                                    <td>Gives higher magnitude to frequent words regardless of informativeness</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Semantic Discrimination</strong></td>
-                                    <td>High (distinguishes rare keywords like "wormhole", "magician")</td>
-                                    <td>Moderate (can be skewed by word repetitions)</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Recommended Use Case</strong></td>
-                                    <td>Story & plot similarity, fine-grained semantic recommendation</td>
-                                    <td>Quick keyword matching, uniform feature distributions</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Movie Details Interactive Modal -->
-    <dialog id="movieModal" class="movie-modal">
-        <div class="modal-backdrop" onclick="closeModal()"></div>
-        <div class="modal-container">
-            <button class="modal-close-btn" onclick="closeModal()">&times;</button>
-            <div id="modalContent" class="modal-body">
-                <!-- Dynamically populated -->
-            </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">FoodQueue<span class="text-orange-500">.io</span></h1>
+            <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 dark:bg-orange-950/60 dark:text-orange-300 font-bold">FIFO Engine</span>
+          </div>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400">First-In-First-Out Order Scheduling & Kitchen Dispatch</p>
         </div>
-    </dialog>
+      </div>
 
-    <!-- Toast Notification Element -->
-    <div id="toast" class="toast hidden"></div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <p>&copy; 2026-27 <strong>CineMind NLP</strong> &bull; Mini Project by <strong>Sushant Ingole</strong> & <strong>Diksha Bhalke</strong></p>
-            <p class="footer-college">Dr. D. Y. Patil College of Engineering and Innovation, Department of Engineering Science & Humanities</p>
+      <!-- Quick Interactive Actions & Queue Stats -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Live Waiting Queue Count Badge -->
+        <div class="flex items-center space-x-1.5 px-3 py-1 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/80 rounded-full text-xs font-semibold text-orange-700 dark:text-orange-300">
+          <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+          <span>Queue Size:</span>
+          <span id="header-queue-size-badge" class="font-bold font-mono text-sm">{{ dashboard.waiting_queue.size }}</span>
         </div>
-    </footer>
 
-    <!-- Client-side Scripts -->
-    <script>
-        // Pass server-rendered initial movies to client JS
-        window.INITIAL_MOVIES = {{ all_movies|tojson|safe }};
-        window.INITIAL_STATS = {{ stats|tojson|safe }};
-    </script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+        <!-- Quick Simulate Order Button (Enqueue) -->
+        <button onclick="simulateQuickOrder()" title="Simulate a new incoming customer order (Enqueue)" class="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition">
+          <i class="fas fa-plus-circle"></i>
+          <span>Simulate Order</span>
+        </button>
+
+        <!-- Process Next Order Button (Dequeue) -->
+        <button onclick="dequeueNextOrder()" title="Dequeue next order from front to kitchen" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-orange-500 hover:bg-orange-600 text-white shadow-sm transition">
+          <i class="fas fa-forward-step"></i>
+          <span class="hidden md:inline">Dequeue Next</span>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button id="btn-sound-toggle" onclick="toggleSound()" title="Toggle Audio Chimes" class="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">
+          <i class="fas fa-volume-up"></i>
+        </button>
+
+        <!-- Reset System Button -->
+        <button onclick="resetSystemWorkload()" title="Reset Queue Workload" class="w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs">
+          <i class="fas fa-rotate-right"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Navigation Tab Bar -->
+    <div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/60 overflow-x-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 py-1.5 text-xs">
+        <button onclick="switchTab('menu')" data-tab="menu" class="nav-tab-btn px-3.5 py-1.5 rounded-lg font-bold flex items-center space-x-2 bg-orange-500 text-white shadow-md">
+          <i class="fas fa-utensils"></i>
+          <span>Menu & Order</span>
+          <span id="cart-item-count-badge" class="hidden px-1.5 py-0.2 text-[10px] bg-white text-orange-600 rounded-full font-black">0</span>
+        </button>
+
+        <button onclick="switchTab('track')" data-tab="track" class="nav-tab-btn px-3.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center space-x-2">
+          <i class="fas fa-location-crosshairs"></i>
+          <span>Live Order Tracking</span>
+        </button>
+
+        <button onclick="switchTab('counter')" data-tab="counter" class="nav-tab-btn px-3.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center space-x-2">
+          <i class="fas fa-tv"></i>
+          <span>Pickup Counter Display</span>
+        </button>
+
+        <button onclick="switchTab('kitchen')" data-tab="kitchen" class="nav-tab-btn px-3.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center space-x-2">
+          <i class="fas fa-kitchen-set"></i>
+          <span>Kitchen KDS (FIFO)</span>
+        </button>
+
+        <button onclick="switchTab('dsa')" data-tab="dsa" class="nav-tab-btn px-3.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center space-x-2">
+          <i class="fas fa-diagram-project"></i>
+          <span>Queue DSA Visualizer</span>
+        </button>
+
+        <button onclick="switchTab('report')" data-tab="report" class="nav-tab-btn px-3.5 py-1.5 rounded-lg font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center space-x-2">
+          <i class="fas fa-file-lines"></i>
+          <span>Project Report & Viva</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Main View Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: FOOD MENU & ONLINE ORDER PLACEMENT (CUSTOMER PORTAL) -->
+    <!-- ========================================================================= -->
+    <div id="tab-content-menu" class="tab-view">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left 2 Cols: Menu Selection -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Category Filter Bar -->
+          <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none">
+            {% for cat in categories %}
+            <button class="menu-category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition border border-gray-200 dark:border-gray-700 {% if loop.first %}bg-orange-500 text-white{% else %}bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200{% endif %}"
+                    data-category="{{ cat }}">
+              {{ cat }}
+            </button>
+            {% endfor %}
+          </div>
+
+          <!-- Food Cards Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {% for item in menu %}
+            <div class="food-card food-card-item bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 flex flex-col justify-between"
+                 data-category="{{ item.category }}">
+              <div>
+                <div class="flex items-start justify-between">
+                  <div class="flex items-center space-x-3">
+                    <span class="text-3xl p-2 bg-orange-50 dark:bg-gray-700/60 rounded-xl">{{ item.icon }}</span>
+                    <div>
+                      <div class="flex items-center space-x-1.5">
+                        <span class="text-xs {% if item.is_veg %}text-green-600{% else %}text-red-600{% endif %}">
+                          <i class="fas fa-circle text-[10px]"></i>
+                        </span>
+                        <h3 class="font-bold text-sm text-gray-900 dark:text-white">{{ item.name }}</h3>
+                      </div>
+                      <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{ item.category }} • {{ item.calories }} kcal</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
+                  {{ item.description }}
+                </p>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/80 flex items-center justify-between">
+                <div>
+                  <span class="text-xs text-gray-400">Price</span>
+                  <p class="text-base font-black text-gray-900 dark:text-white font-mono">₹{{ item.price }}</p>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                  <span class="text-[11px] text-gray-400"><i class="fas fa-clock mr-1"></i>{{ item.prep_time_mins }}m</span>
+                  <button onclick="addToCart('{{ item.id }}', '{{ item.name }}', {{ item.price }}, '{{ item.icon }}', '{{ item.is_veg }}')"
+                          class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-orange-500 hover:bg-orange-600 text-white shadow-sm flex items-center space-x-1 transition active:scale-95">
+                    <i class="fas fa-plus"></i>
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Right Col: Cart & Order Enqueue Panel -->
+        <div class="space-y-6">
+          <div class="sticky top-24 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+            
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-receipt text-orange-500 text-lg"></i>
+                <h2 class="font-bold text-gray-900 dark:text-white text-base">Current Order Ticket</h2>
+              </div>
+              <button onclick="clearCart()" class="text-xs text-gray-400 hover:text-red-500 transition">
+                Clear
+              </button>
+            </div>
+
+            <!-- Cart Items Container -->
+            <div id="cart-items-container" class="my-4 max-h-56 overflow-y-auto space-y-2.5 pr-1">
+              <!-- Dynamically populated via renderCart() -->
+            </div>
+
+            <!-- Customer & Dining Details Form -->
+            <form onsubmit="submitOrder(event)" class="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Customer Name</label>
+                <input type="text" id="order-customer-name" placeholder="e.g. Rahul Sharma" required
+                       class="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none">
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Dining Mode</label>
+                  <select id="order-dining-type" class="w-full px-2.5 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none">
+                    <option value="Dine-In">Dine-In</option>
+                    <option value="Takeaway">Takeaway</option>
+                    <option value="Express Pickup">Express Pickup</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Table / Token</label>
+                  <input type="text" id="order-table-number" value="Table 4"
+                         class="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Kitchen Notes (Optional)</label>
+                <input type="text" id="order-chef-notes" placeholder="e.g. Extra spicy, less cheese"
+                       class="w-full px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none">
+              </div>
+
+              <!-- Price Breakdown -->
+              <div class="pt-2 text-xs space-y-1 text-gray-500 border-t border-gray-100 dark:border-gray-700 font-mono">
+                <div class="flex justify-between">
+                  <span>Subtotal</span>
+                  <span id="cart-subtotal" class="font-bold text-gray-800 dark:text-gray-200">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>GST (5%)</span>
+                  <span id="cart-tax" class="text-gray-600 dark:text-gray-400">₹0</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold text-gray-900 dark:text-white pt-1 border-t border-dashed border-gray-200 dark:border-gray-700">
+                  <span>Total Amount</span>
+                  <span id="cart-total" class="text-orange-600 dark:text-orange-400 font-black">₹0</span>
+                </div>
+              </div>
+
+              <!-- Place Order Button (Enqueue) -->
+              <button type="submit" id="btn-submit-order" disabled
+                      class="w-full mt-3 py-3 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center justify-center space-x-2">
+                <i class="fas fa-arrow-down"></i>
+                <span>Confirm & Enqueue Order</span>
+              </button>
+            </form>
+
+            <div class="mt-4 p-2.5 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 text-[11px] text-orange-800 dark:text-orange-300 flex items-center space-x-2">
+              <i class="fas fa-info-circle text-orange-600"></i>
+              <span>Orders enter at the <strong>REAR</strong> of the Queue and are processed strictly in arrival order (FIFO).</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: LIVE ORDER STATUS TRACKING (TRACK BY ID) -->
+    <!-- ========================================================================= -->
+    <div id="tab-content-track" class="tab-view hidden space-y-6">
+      
+      <!-- Search Input Header -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+        <div class="max-w-2xl mx-auto text-center space-y-3">
+          <div class="w-12 h-12 mx-auto rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 flex items-center justify-center text-xl">
+            <i class="fas fa-magnifying-glass"></i>
+          </div>
+          <h2 class="text-xl font-black text-gray-900 dark:text-white">Track Order Preparation & Queue Spot</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            Enter your token or order number to observe your meal moving through Queue Enqueue &rarr; Kitchen Cooking &rarr; Pick-up Counter.
+          </p>
+
+          <form onsubmit="event.preventDefault(); executeTrackOrder();" class="flex gap-2 max-w-md mx-auto pt-2">
+            <input type="text" id="track-order-input" value="ORD-105" placeholder="e.g. ORD-105" required
+                   class="flex-1 px-4 py-2.5 text-sm font-mono uppercase rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none">
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition">
+              Track
+            </button>
+          </form>
+
+          <!-- Quick Test Token Chips -->
+          <div class="flex items-center justify-center space-x-2 pt-2 text-xs">
+            <span class="text-gray-400">Quick Test IDs:</span>
+            <button onclick="executeTrackOrder('ORD-103')" class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 hover:bg-orange-100 text-gray-700 dark:text-gray-300 font-mono text-xs">ORD-103 (Ready)</button>
+            <button onclick="executeTrackOrder('ORD-104')" class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 hover:bg-orange-100 text-gray-700 dark:text-gray-300 font-mono text-xs">ORD-104 (Cooking)</button>
+            <button onclick="executeTrackOrder('ORD-105')" class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 hover:bg-orange-100 text-gray-700 dark:text-gray-300 font-mono text-xs">ORD-105 (Queue Front)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tracking Results Container -->
+      <div id="track-results-container">
+        <!-- Rendered dynamically by renderTrackingDashboard() -->
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: PUBLIC PICKUP COUNTER DISPLAY BOARD (SPLIT SCREEN) -->
+    <!-- ========================================================================= -->
+    <div id="tab-content-counter" class="tab-view hidden space-y-6">
+      
+      <!-- Digital Signage Frame -->
+      <div class="bg-gray-950 text-white rounded-3xl p-6 sm:p-8 border border-gray-800 shadow-2xl">
+        
+        <!-- Screen Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-gray-800 gap-4">
+          <div>
+            <div class="flex items-center space-x-3">
+              <span class="text-3xl">🛎️</span>
+              <h2 class="text-2xl font-black tracking-wider uppercase text-white font-mono">ORDER STATUS BOARD</h2>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Live customer takeaway & pickup counter monitor</p>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <span class="text-[10px] text-gray-400 uppercase tracking-widest block font-mono">Current Time</span>
+              <span class="text-base font-black font-mono text-amber-400" id="counter-clock-display">LIVE DISPATCH</span>
+            </div>
+            <button onclick="document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()"
+                    title="Fullscreen Display Mode" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-mono border border-gray-700">
+              <i class="fas fa-expand mr-1"></i> Fullscreen
+            </button>
+          </div>
+        </div>
+
+        <!-- Split Screen Display Columns -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+          
+          <!-- Column 1: Now Preparing -->
+          <div class="bg-gray-900/80 rounded-2xl p-5 border border-amber-900/40">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-800">
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+                <h3 class="font-black text-amber-400 tracking-wider text-lg font-mono">NOW PREPARING</h3>
+              </div>
+              <span class="text-xs text-gray-400 font-mono">In Kitchen</span>
+            </div>
+
+            <div id="counter-preparing-grid" class="mt-4 space-y-3">
+              <!-- Dynamically populated via renderCounterDisplay() -->
+            </div>
+          </div>
+
+          <!-- Column 2: Ready for Pickup -->
+          <div class="bg-emerald-950/30 rounded-2xl p-5 border border-emerald-900/50">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-800">
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+                <h3 class="font-black text-emerald-400 tracking-wider text-lg font-mono">READY FOR PICKUP</h3>
+              </div>
+              <span class="text-xs text-emerald-400/80 font-mono font-bold">Please Collect</span>
+            </div>
+
+            <div id="counter-ready-grid" class="mt-4 space-y-3">
+              <!-- Dynamically populated via renderCounterDisplay() -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: KITCHEN DISPLAY SYSTEM (KDS) & CHEF OPERATIONS (FIFO) -->
+    <!-- ========================================================================= -->
+    <div id="tab-content-kitchen" class="tab-view hidden space-y-6">
+      
+      <!-- Operations Toolbar -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-black text-gray-900 dark:text-white flex items-center space-x-2">
+            <i class="fas fa-kitchen-set text-orange-500"></i>
+            <span>Kitchen Display System (KDS) - Strict FIFO Dispatch</span>
+          </h2>
+          <p class="text-xs text-gray-500">Chef workstation: Dequeue incoming orders from the front of the queue and cook meals.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Auto-cook Simulation Toggle -->
+          <label class="flex items-center space-x-2 text-xs font-semibold cursor-pointer bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600">
+            <input type="checkbox" id="auto-cook-toggle" onchange="toggleAutoCookSimulation()" class="rounded text-orange-500 focus:ring-orange-500">
+            <span>Auto Chef Simulation (4.5s)</span>
+          </label>
+
+          <!-- Step Simulation Button -->
+          <button onclick="triggerSimulationStep()" class="px-3 py-2 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition">
+            <i class="fas fa-play mr-1 text-orange-500"></i> Step 1 Tick
+          </button>
+
+          <!-- Dequeue Action Button -->
+          <button id="btn-dequeue-action" onclick="dequeueNextOrder()" class="px-4 py-2 rounded-xl text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-sm transition flex items-center space-x-2">
+            <i class="fas fa-bell"></i>
+            <span>Dequeue Front Order</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KDS Main Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Col: Incoming Waiting Orders Queue (FIFO Sequence) -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              <h3 class="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wider">Incoming Orders Queue</h3>
+            </div>
+            <span class="text-xs text-gray-400 font-mono">Strict FIFO Order</span>
+          </div>
+
+          <div id="kds-waiting-queue-list" class="space-y-3">
+            <!-- Dynamically populated via renderKitchenKDS() -->
+          </div>
+        </div>
+
+        <!-- Right 2 Cols: Active Chef Cooking Stations -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <h3 class="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wider">Active Cooking Stations (3 Bays)</h3>
+            </div>
+            <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold">Chef Station In-Progress</span>
+          </div>
+
+          <div id="kds-preparing-stations" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamically populated via renderKitchenKDS() -->
+          </div>
+
+          <!-- Instructions Card for Evaluator / Viva -->
+          <div class="mt-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-300 space-y-1">
+            <h4 class="font-bold flex items-center space-x-1.5">
+              <i class="fas fa-lightbulb text-amber-500"></i>
+              <span>Viva Demonstration Note:</span>
+            </h4>
+            <p>Notice that clicking <strong>"Dequeue Front Order"</strong> always dequeues the top card marked <code>👑 FRONT</code>. It is mathematically impossible for an order placed later to skip ahead of an earlier order, upholding the <strong>First-In-First-Out (FIFO)</strong> invariant.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: QUEUE DSA VISUALIZER & MEMORY LAB -->
+    <!-- ========================================================================= -->
+    <div id="tab-content-dsa" class="tab-view hidden space-y-6">
+      
+      <!-- Header Metrics Strip -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-2xl shadow-sm text-center">
+          <span class="text-xs text-gray-400 uppercase font-semibold">Queue Size (N)</span>
+          <p id="dsa-metric-size" class="text-2xl font-black font-mono text-orange-600 mt-1">0</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-2xl shadow-sm text-center">
+          <span class="text-xs text-gray-400 uppercase font-semibold">Total Enqueued</span>
+          <p id="dsa-metric-enqueued" class="text-2xl font-black font-mono text-blue-600 mt-1">0</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-2xl shadow-sm text-center">
+          <span class="text-xs text-gray-400 uppercase font-semibold">Total Dequeued</span>
+          <p id="dsa-metric-dequeued" class="text-2xl font-black font-mono text-emerald-600 mt-1">0</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-2xl shadow-sm text-center flex flex-col justify-center items-center">
+          <span class="text-xs text-gray-400 uppercase font-semibold">FIFO Invariant</span>
+          <div id="dsa-fifo-invariant-badge" class="mt-1">
+            <span class="text-xs font-bold text-emerald-500">Checking...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Memory Representation Diagram -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
+          <div>
+            <h3 class="font-black text-gray-900 dark:text-white text-base flex items-center space-x-2">
+              <i class="fas fa-memory text-orange-500"></i>
+              <span>Queue Memory Representation (Linked Nodes & Pointers)</span>
+            </h3>
+            <p class="text-xs text-gray-500">Live visualization of memory nodes, FRONT pointer, and REAR pointer.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="simulateQuickOrder()" class="px-3 py-1 text-xs font-bold rounded bg-blue-600 text-white hover:bg-blue-700">
+              + Enqueue (O(1))
+            </button>
+            <button onclick="dequeueNextOrder()" class="px-3 py-1 text-xs font-bold rounded bg-orange-500 text-white hover:bg-orange-600">
+              - Dequeue (O(1))
+            </button>
+          </div>
+        </div>
+
+        <!-- Node Chain Visualization Area -->
+        <div class="overflow-x-auto py-8 px-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center justify-start min-h-[180px]">
+          <div id="dsa-memory-array-container" class="flex items-center space-x-4">
+            <!-- Dynamically populated via renderQueueDSAVisualizer() -->
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400 pt-2">
+          <div class="flex items-start space-x-2">
+            <span class="w-3 h-3 rounded-full bg-orange-500 mt-0.5"></span>
+            <span><strong>FRONT Pointer:</strong> Always references the oldest order in the system. <code>dequeue()</code> takes O(1) time without shifting elements.</span>
+          </div>
+          <div class="flex items-start space-x-2">
+            <span class="w-3 h-3 rounded-full bg-blue-500 mt-0.5"></span>
+            <span><strong>REAR Pointer:</strong> Always references the newest order entered. <code>enqueue()</code> links the new node in O(1) time.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Theory & Complexity Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Algorithm Pseudocode -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 class="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
+            <i class="fas fa-code text-orange-500"></i>
+            <span>Queue Algorithms Pseudocode</span>
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <span class="text-xs font-bold text-gray-700 dark:text-gray-300">1. Enqueue Operation (Insertion at Rear)</span>
+              <pre class="pseudocode mt-1">Algorithm Enqueue(Queue, order):
+  1. newNode = new Node(order)
+  2. if Queue.isEmpty():
+         Queue.front = newNode
+         Queue.rear = newNode
+     else:
+         Queue.rear.next = newNode
+         Queue.rear = newNode
+  3. Queue.size = Queue.size + 1
+  4. return True  // Time: O(1)</pre>
+            </div>
+
+            <div>
+              <span class="text-xs font-bold text-gray-700 dark:text-gray-300">2. Dequeue Operation (Removal from Front)</span>
+              <pre class="pseudocode mt-1">Algorithm Dequeue(Queue):
+  1. if Queue.isEmpty():
+         throw QueueUnderflowError
+  2. order = Queue.front.data
+  3. Queue.front = Queue.front.next
+  4. if Queue.front == NULL:
+         Queue.rear = NULL
+  5. Queue.size = Queue.size - 1
+  6. return order  // Time: O(1)</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Complexity Comparison Table & Audit Log -->
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm space-y-4">
+            <h3 class="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
+              <i class="fas fa-chart-simple text-orange-500"></i>
+              <span>Asymptotic Time & Space Complexity</span>
+            </h3>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-gray-200 dark:border-gray-700 text-gray-500">
+                    <th class="py-2 font-bold">Queue Operation</th>
+                    <th class="py-2 font-bold">Best Case</th>
+                    <th class="py-2 font-bold">Worst Case</th>
+                    <th class="py-2 font-bold">Space Complexity</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700 font-mono">
+                  <tr>
+                    <td class="py-2 font-bold text-orange-600">Enqueue(order)</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2">O(1)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 font-bold text-orange-600">Dequeue()</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2">O(1)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 font-bold text-gray-700 dark:text-gray-300">Peek() / Front()</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2">O(1)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 font-bold text-gray-700 dark:text-gray-300">isEmpty()</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2">O(1)</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 font-bold text-gray-700 dark:text-gray-300">Search by ID</td>
+                    <td class="py-2 text-emerald-600">O(1)</td>
+                    <td class="py-2 text-amber-600">O(N)</td>
+                    <td class="py-2">O(1)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Live Operations Audit Trail -->
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm space-y-3">
+            <h3 class="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
+              <i class="fas fa-list-check text-orange-500"></i>
+              <span>Live Queue Operations Log</span>
+            </h3>
+            <div id="dsa-operations-log" class="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+              <!-- Dynamically populated via renderQueueDSAVisualizer() -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 6: MINI PROJECT REPORT, ARCHITECTURE & VIVA PREPARATION -->
+    <!-- ========================================================================= -->
+    <div id="tab-content-report" class="tab-view hidden space-y-6">
+      
+      <!-- Academic Project Overview Card -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+        
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300">
+              Engineering Mini Project
+            </span>
+            <span class="text-xs text-gray-500">Academic Year: 2026-27</span>
+          </div>
+          <h2 class="text-2xl font-black text-gray-900 dark:text-white">
+            Design & Implementation of an Online Food Order Processing System using Queue Data Structure
+          </h2>
+          <p class="text-xs text-gray-500 mt-1">
+            Department of Engineering Science and Humanities • Dr. D. Y. Patil College of Engineering and Innovation
+          </p>
+        </div>
+
+        <!-- Student & Guide Information Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700">
+            <span class="text-[11px] text-gray-400 uppercase font-bold">Project Team</span>
+            <p class="font-bold text-sm text-gray-900 dark:text-white mt-1">Ingole Sushant Prakashrao</p>
+            <p class="font-bold text-sm text-gray-900 dark:text-white">Bhalke Diksha Sangmeshwar</p>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700">
+            <span class="text-[11px] text-gray-400 uppercase font-bold">Course / Domain</span>
+            <p class="font-bold text-sm text-gray-900 dark:text-white mt-1">Data Structures & Algorithms</p>
+            <p class="text-xs text-gray-500">Linear Queue & System Design</p>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700">
+            <span class="text-[11px] text-gray-400 uppercase font-bold">Institution</span>
+            <p class="font-bold text-sm text-gray-900 dark:text-white mt-1">DYPCOEI, Varale, Pune</p>
+            <p class="text-xs text-gray-500">Affiliated to SPPU</p>
+          </div>
+        </div>
+
+        <!-- Abstract & Objectives -->
+        <div class="space-y-4 text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 pb-2">
+            1. Abstract & Problem Statement
+          </h3>
+          <p>
+            Traditional food ordering systems in quick-service restaurants face customer dissatisfaction and unfair wait times when orders are fulfilled out of sequence. To ensure deterministic fairness and avoid starvation, this project implements an <strong>Online Food Order Processing System</strong> governed by a <strong>First-In-First-Out (FIFO) Queue Data Structure</strong>.
+          </p>
+          <p>
+            The system guarantees that incoming customer requests are placed at the <code>REAR</code> (Enqueue) and prepared by kitchen staff strictly from the <code>FRONT</code> (Dequeue). The platform features real-time order tracking with position countdowns, a digital Kitchen Display System (KDS), a public McDonald's-style pickup counter display, and an interactive DSA memory visualization lab.
+          </p>
+        </div>
+
+        <!-- System Architecture & Lifecycle Diagram -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 pb-2">
+            2. System Architecture & Queue Lifecycle
+          </h3>
+
+          <div class="p-6 bg-gray-900 text-gray-100 rounded-2xl border border-gray-800 font-mono text-xs overflow-x-auto space-y-4">
+            <div class="flex items-center justify-between text-amber-400 font-bold border-b border-gray-800 pb-2">
+              <span>CUSTOMER LAYER</span>
+              <span>QUEUE CONTROLLER (O(1))</span>
+              <span>KITCHEN & COUNTER</span>
+            </div>
+
+            <div class="flex items-center justify-between text-center gap-2">
+              <div class="p-3 bg-gray-800 rounded-xl border border-gray-700 flex-1">
+                <div class="text-lg mb-1">🛒</div>
+                <div class="font-bold">Place Order</div>
+                <div class="text-[10px] text-gray-400">Cart Selection</div>
+              </div>
+
+              <div class="text-orange-500 font-bold">➔ enqueue()</div>
+
+              <div class="p-3 bg-orange-950/80 rounded-xl border border-orange-700 flex-1">
+                <div class="text-lg mb-1">📋</div>
+                <div class="font-bold text-orange-400">Waiting Queue</div>
+                <div class="text-[10px] text-orange-300">FIFO Line (Head/Tail)</div>
+              </div>
+
+              <div class="text-orange-500 font-bold">➔ dequeue()</div>
+
+              <div class="p-3 bg-blue-950/80 rounded-xl border border-blue-700 flex-1">
+                <div class="text-lg mb-1">👨‍🍳</div>
+                <div class="font-bold text-blue-400">Cooking Bay</div>
+                <div class="text-[10px] text-blue-300">Active Prep</div>
+              </div>
+
+              <div class="text-emerald-500 font-bold">➔ ready</div>
+
+              <div class="p-3 bg-emerald-950/80 rounded-xl border border-emerald-700 flex-1">
+                <div class="text-lg mb-1">🛎️</div>
+                <div class="font-bold text-emerald-400">Pickup Counter</div>
+                <div class="text-[10px] text-emerald-300">Customer Handover</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 10 Viva Questions and Answers -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 pb-2">
+            3. Mini Project Viva Q&A Guide (For External Examiner)
+          </h3>
+
+          <div class="space-y-3">
+            <details class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 text-xs">
+              <summary class="font-bold text-gray-900 dark:text-white cursor-pointer">
+                Q1: Why is a Queue data structure chosen instead of a Stack for food order processing?
+              </summary>
+              <p class="mt-2 text-gray-600 dark:text-gray-300 pl-4 border-l-2 border-orange-500">
+                A Stack operates on LIFO (Last-In-First-Out), meaning the newest order placed would be cooked first, causing earlier customers to starve indefinitely. A Queue enforces FIFO (First-In-First-Out), ensuring every customer is served fairly in the exact order of arrival.
+              </p>
+            </details>
+
+            <details class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 text-xs">
+              <summary class="font-bold text-gray-900 dark:text-white cursor-pointer">
+                Q2: What is the time complexity of Enqueue and Dequeue in your implementation?
+              </summary>
+              <p class="mt-2 text-gray-600 dark:text-gray-300 pl-4 border-l-2 border-orange-500">
+                Both Enqueue and Dequeue achieve <strong>O(1) constant time complexity</strong>. Using explicit <code>front</code> and <code>rear</code> pointers, inserting at the tail requires no shifting, and removing from the head simply advances the front pointer.
+              </p>
+            </details>
+
+            <details class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 text-xs">
+              <summary class="font-bold text-gray-900 dark:text-white cursor-pointer">
+                Q3: What is "False Overflow" in linear queues and how is it prevented?
+              </summary>
+              <p class="mt-2 text-gray-600 dark:text-gray-300 pl-4 border-l-2 border-orange-500">
+                In fixed-array linear queues, as elements are dequeued, empty slots appear at the front, but the rear pointer may reach the array boundary, reporting queue full even with vacant space. In this project, we prevent this by utilizing a <strong>linked-node dynamic queue</strong> and providing a <strong>circular buffer module</strong> using modulo arithmetic <code>(rear + 1) % capacity</code>.
+              </p>
+            </details>
+
+            <details class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 text-xs">
+              <summary class="font-bold text-gray-900 dark:text-white cursor-pointer">
+                Q4: How does the system calculate dynamic wait times for waiting customers?
+              </summary>
+              <p class="mt-2 text-gray-600 dark:text-gray-300 pl-4 border-l-2 border-orange-500">
+                Wait time is computed dynamically based on the order's 1-based position in the queue: <code>Estimated Wait = (Queue Position × Average Slot Time) + Recipe Prep Time</code>. As earlier orders are dequeued, each waiting customer's position automatically decrements.
+              </p>
+            </details>
+
+            <details class="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-700 text-xs">
+              <summary class="font-bold text-gray-900 dark:text-white cursor-pointer">
+                Q5: Where else are Queue data structures used in computer science?
+              </summary>
+              <p class="mt-2 text-gray-600 dark:text-gray-300 pl-4 border-l-2 border-orange-500">
+                Queues are ubiquitous: CPU Task Scheduling (Round Robin / FCFS), Operating System Print Spoolers, Breadth-First Search (BFS) graph traversals, Web Server asynchronous request handling (Nginx / RabbitMQ), and Network packet buffers.
+              </p>
+            </details>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- ORDER CONFIRMATION MODAL -->
+  <!-- ========================================================================= -->
+  <div id="modal-order-success" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl space-y-4">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center text-2xl mx-auto shadow-inner">
+        <i class="fas fa-check"></i>
+      </div>
+
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Order Enqueued Successfully!</span>
+        <h3 id="modal-token-id" class="text-3xl font-black font-mono text-gray-900 dark:text-white mt-1">ORD-108</h3>
+        <p class="text-xs text-gray-500 mt-1">Thank you, <span id="modal-cust-name" class="font-bold text-gray-700 dark:text-gray-300">Customer</span>!</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 py-3 border-y border-gray-100 dark:border-gray-700 text-xs">
+        <div class="bg-orange-50 dark:bg-orange-950/40 p-2.5 rounded-xl border border-orange-200 dark:border-orange-800">
+          <span class="text-[10px] text-orange-600 font-bold uppercase">Queue Spot</span>
+          <p id="modal-queue-pos" class="font-black font-mono text-orange-700 dark:text-orange-300 text-sm">Position #4</p>
+        </div>
+        <div class="bg-blue-50 dark:bg-blue-950/40 p-2.5 rounded-xl border border-blue-200 dark:border-blue-800">
+          <span class="text-[10px] text-blue-600 font-bold uppercase">Estimated Wait</span>
+          <p id="modal-est-time" class="font-black font-mono text-blue-700 dark:text-blue-300 text-sm">12 mins</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs px-2 text-gray-500">
+        <span>Total Paid:</span>
+        <span id="modal-total-amt" class="font-black font-mono text-gray-900 dark:text-white text-sm">₹0</span>
+      </div>
+
+      <div class="flex space-x-3 pt-2">
+        <button onclick="closeSuccessModal()" class="flex-1 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          Close
+        </button>
+        <button onclick="viewTrackFromModal()" class="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-wider shadow-md transition">
+          Track Live
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 text-xs py-4">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-gray-800 dark:text-gray-200">FoodQueue Pro</span>
+        <span>• Online Food Order Processing System using Queue Data Structure</span>
+      </div>
+      <div>
+        <span>Engineered by <strong>Ingole Sushant & Bhalke Diksha</strong> • DYPCOEI</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core JavaScript Application -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
