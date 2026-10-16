@@ -1,6 +1,7 @@
-"""Utility script to push the repository to GitHub.
+"""Utility script to push the Online Food Order Processing System repository to GitHub.
 
 Configures SSL certificates and pushes via Dulwich (Pure Python Git client).
+Supports GitHub Personal Access Token (PAT).
 """
 
 import os
@@ -15,7 +16,7 @@ from dulwich.repo import Repo
 
 
 def push_with_python(remote_url: str, username: str = "sushantv2301", token: str = ""):
-    """Push local main branch to remote using pure Python Dulwich."""
+    """Push local main and master branches to remote using pure Python Dulwich."""
     repo = Repo(".")
     print(f"[*] Target GitHub Repository: {remote_url}")
 
@@ -24,11 +25,10 @@ def push_with_python(remote_url: str, username: str = "sushantv2301", token: str
     config.set((b"remote", b"origin"), b"url", remote_url.encode("utf-8"))
     config.write_to_path()
 
-    # If token provided, format URL with credentials
+    # Format URL with credentials if token is provided
     push_url = remote_url
     if token:
         clean_url = remote_url.replace("https://", "").replace("http://", "")
-        # GitHub accepts https://<token>@github.com/... or https://<username>:<token>@github.com/...
         if username:
             push_url = f"https://{username}:{token}@{clean_url}"
         else:
@@ -43,20 +43,25 @@ def push_with_python(remote_url: str, username: str = "sushantv2301", token: str
         )
         print("\n==============================================================")
         print("  🎉 SUCCESS! Project successfully pushed to GitHub!")
-        print(f"  View online: https://github.com/sushantv2301/Movie-Recommendation-system")
+        print(f"  View online: https://github.com/sushantv2301/online-food-Processing-System")
         print("==============================================================\n")
     except Exception as e:
-        print(f"\n[!] Push failed: {e}")
-        if "HTTPUnauthorized" in str(type(e)) or "No valid credentials" in str(e):
-            print("\nGitHub requires authentication to push.")
-            print("Please provide a Personal Access Token (PAT) from GitHub:")
-            print("1. Go to https://github.com/settings/tokens")
-            print("2. Generate a token with 'repo' scope")
-            print("3. Re-run this script with your token.")
+        err_str = str(e)
+        print(f"\n[!] Push failed: {err_str}")
+        if "HTTPUnauthorized" in str(type(e)) or "No valid credentials" in err_str or "401" in err_str or "403" in err_str:
+            print("\nGitHub requires authentication to push to your repository.")
+            print("Please generate a Personal Access Token (classic) on GitHub:")
+            print("  1. Visit: https://github.com/settings/tokens")
+            print("  2. Click 'Generate new token (classic)'")
+            print("  3. Give it a name and check the 'repo' scope checkbox")
+            print("  4. Copy the token (starts with ghp_...)")
+            print("  5. Run: python3 push_to_github.py <YOUR_TOKEN>\n")
+        elif "nodename nor servname provided" in err_str or "NameResolutionError" in err_str:
+            print("\n[!] Network error: Cannot resolve github.com. Please check your internet connection.\n")
 
 
 def main():
-    repo_url = "https://github.com/sushantv2301/Movie-Recommendation-system.git"
+    repo_url = "https://github.com/sushantv2301/online-food-Processing-System.git"
     token = ""
 
     if len(sys.argv) > 1:
@@ -69,13 +74,17 @@ def main():
                 token = sys.argv[2].strip()
 
     if not token:
-        token = os.environ.get("GITHUB_TOKEN", "").strip()
+        token = os.environ.get("GITHUB_TOKEN", "").strip() or os.environ.get("GH_TOKEN", "").strip()
 
     if not token:
         print("==============================================================")
-        print("  Pushing to: https://github.com/sushantv2301/Movie-Recommendation-system.git")
+        print(f"  Pushing to: {repo_url}")
         print("==============================================================")
-        token = input("Enter your GitHub Personal Access Token (starts with ghp_ or github_pat_): ").strip()
+        try:
+            token = input("Enter your GitHub Personal Access Token (starts with ghp_...): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nOperation cancelled.")
+            return
 
     push_with_python(repo_url, username="sushantv2301", token=token)
 
