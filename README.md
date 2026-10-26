@@ -13,6 +13,7 @@ An interactive, production-grade Web Application and Data Structures & Algorithm
 - **Project Developers:**
   - **Ingole Sushant Prakashrao**
   - **Bhalke Diksha Sangmeshwar**
+  - **More Aniket Arun**
 
 ---
 

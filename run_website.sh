@@ -2,7 +2,7 @@
 # ==============================================================================
 # FoodQueue Pro - Launch Script
 # Engineering Mini Project: Online Food Order Processing System using Queue Data Structure
-# Students: Sushant Ingole & Diksha Bhalke
+# Students: Sushant Ingole, Diksha Bhalke & Aniket More
 # College: Dr. D. Y. Patil College of Engineering and Innovation (A.Y. 2026-27)
 # ==============================================================================
 
@@ -13,7 +13,7 @@ echo "=================================================================="
 echo "  🍔 FoodQueue Pro: Online Food Order Processing System"
 echo "  Topic: First-In-First-Out (FIFO) Queue Data Structure Mini Project"
 echo "  Dr. D. Y. Patil College of Engineering and Innovation"
-echo "  Students: Sushant Ingole & Diksha Bhalke"
+echo "  Students: Sushant Ingole, Diksha Bhalke & Aniket More"
 echo "=================================================================="
 
 # Check if virtual environment exists

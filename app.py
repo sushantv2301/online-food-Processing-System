@@ -2,7 +2,7 @@
 
 Engineering Mini Project:
 - Project Title: Online Food Order Processing System using Queue Data Structure
-- Students: Ingole Sushant Prakashrao & Bhalke Diksha Sangmeshwar
+- Students: Ingole Sushant Prakashrao, Bhalke Diksha Sangmeshwar & More Aniket Arun
 - College: Dr. D. Y. Patil College of Engineering and Innovation
 - Department: Engineering Science and Humanities
 - Academic Year: 2026-27
@@ -220,7 +220,7 @@ def dsa_info():
         "academic_details": {
             "title": "Online Food Order Processing System using Queue Data Structure",
             "college": "Dr. D. Y. Patil College of Engineering and Innovation",
-            "students": "Ingole Sushant Prakashrao & Bhalke Diksha Sangmeshwar",
+            "students": "Ingole Sushant Prakashrao, Bhalke Diksha Sangmeshwar & More Aniket Arun",
             "academic_year": "2026-27"
         }
     })
@@ -245,4 +245,4 @@ if __name__ == "__main__":
     print(f"  🍔 FoodQueue Pro Web Server Active")
     print(f"  URL: http://127.0.0.1:{port}")
     print("=" * 66)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
